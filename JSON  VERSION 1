@@ -1,0 +1,224 @@
+jsom אתר של עדי 
+
+{
+  "name": "טופס הזמנת תור → Airtable",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## מה צריך לפני הפעלה\n1. **Airtable** — צרו טבלה בשם `פניות` עם השדות: שם ההורה, שם הילד/ה, טלפון, מייל, שירות, תאריך מבוקש, שעה, משקל נוכחי, עדיין בפגייה, שעות נוחות לחזרה, מועד שליחה, מקור, סטטוס.\n2. בחרו ב-**Airtable Create record** את ה-Base ואת הטבלה, וצרו Credential (Personal Access Token עם הרשאת data.records:write).\n3. אם שמות השדות שלכם באנגלית — פשוט שנו את שמות השדות בצומת **מיפוי שדות** בהתאמה.\n4. הפעילו (Activate) והעתיקו את כתובת ה-Production webhook אל `src/lib/webhook.js` באתר.",
+        "height": 300,
+        "width": 420,
+        "color": 5
+      },
+      "id": "1f000000-0000-4000-8000-000000000001",
+      "name": "הוראות",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-560, -160]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "form",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "1f000000-0000-4000-8000-000000000002",
+      "name": "Webhook - טופס",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-160, 60],
+      "webhookId": "9f1c2b3a-4d5e-4f60-8a71-2b3c4d5e6f70"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f0000001-0000-4000-8000-000000000001",
+              "name": "שם ההורה",
+              "value": "={{ $json.body.parent_name }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-000000000002",
+              "name": "שם הילד/ה",
+              "value": "={{ $json.body.child_name }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-000000000003",
+              "name": "טלפון",
+              "value": "={{ $json.body.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-000000000004",
+              "name": "מייל",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-000000000005",
+              "name": "שירות",
+              "value": "={{ $json.body.service_label }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-000000000006",
+              "name": "תאריך מבוקש",
+              "value": "={{ $json.body.appointment_date }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-000000000007",
+              "name": "שעה",
+              "value": "={{ $json.body.appointment_time }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-000000000008",
+              "name": "משקל נוכחי",
+              "value": "={{ Number($json.body.current_weight) }}",
+              "type": "number"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-000000000009",
+              "name": "עדיין בפגייה",
+              "value": "={{ $json.body.still_in_nicu }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-00000000000a",
+              "name": "שעות נוחות לחזרה",
+              "value": "={{ $json.body.callback_hours }}",
+              "type": "array"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-00000000000b",
+              "name": "מועד שליחה",
+              "value": "={{ $json.body.submitted_at }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-00000000000c",
+              "name": "מקור",
+              "value": "={{ $json.body.source }}",
+              "type": "string"
+            },
+            {
+              "id": "f0000001-0000-4000-8000-00000000000d",
+              "name": "סטטוס",
+              "value": "חדש",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "1f000000-0000-4000-8000-000000000003",
+      "name": "מיפוי שדות",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [80, 60]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": ""
+        },
+        "table": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "פניות"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "שם ההורה": "={{ $json['שם ההורה'] }}",
+            "שם הילד/ה": "={{ $json['שם הילד/ה'] }}",
+            "טלפון": "={{ $json['טלפון'] }}",
+            "מייל": "={{ $json['מייל'] }}",
+            "שירות": "={{ $json['שירות'] }}",
+            "תאריך מבוקש": "={{ $json['תאריך מבוקש'] }}",
+            "שעה": "={{ $json['שעה'] }}",
+            "משקל נוכחי": "={{ $json['משקל נוכחי'] }}",
+            "עדיין בפגייה": "={{ $json['עדיין בפגייה'] }}",
+            "שעות נוחות לחזרה": "={{ $json['שעות נוחות לחזרה'] }}",
+            "מועד שליחה": "={{ $json['מועד שליחה'] }}",
+            "מקור": "={{ $json['מקור'] }}",
+            "סטטוס": "={{ $json['סטטוס'] }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "1f000000-0000-4000-8000-000000000004",
+      "name": "Airtable - צור פנייה",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [320, 60]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"ok\": true } }}",
+        "options": {}
+      },
+      "id": "1f000000-0000-4000-8000-000000000005",
+      "name": "השב לטופס",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [560, 60]
+    }
+  ],
+  "connections": {
+    "Webhook - טופס": {
+      "main": [
+        [
+          {
+            "node": "מיפוי שדות",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "מיפוי שדות": {
+      "main": [
+        [
+          {
+            "node": "Airtable - צור פנייה",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable - צור פנייה": {
+      "main": [
+        [
+          {
+            "node": "השב לטופס",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
