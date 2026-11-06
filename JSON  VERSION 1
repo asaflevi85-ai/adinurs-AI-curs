@@ -1,20 +1,18 @@
-jsom אתר של עדי 
-
 {
-  "name": "טופס הזמנת תור → Airtable",
+  "name": "טופס הזמנת תור + צ׳אט בוט AI",
   "nodes": [
     {
       "parameters": {
-        "content": "## מה צריך לפני הפעלה\n1. **Airtable** — צרו טבלה בשם `פניות` עם השדות: שם ההורה, שם הילד/ה, טלפון, מייל, שירות, תאריך מבוקש, שעה, משקל נוכחי, עדיין בפגייה, שעות נוחות לחזרה, מועד שליחה, מקור, סטטוס.\n2. בחרו ב-**Airtable Create record** את ה-Base ואת הטבלה, וצרו Credential (Personal Access Token עם הרשאת data.records:write).\n3. אם שמות השדות שלכם באנגלית — פשוט שנו את שמות השדות בצומת **מיפוי שדות** בהתאמה.\n4. הפעילו (Activate) והעתיקו את כתובת ה-Production webhook אל `src/lib/webhook.js` באתר.",
-        "height": 300,
-        "width": 420,
+        "content": "## לפני הפעלה\n**Airtable** — טבלה `פניות` עם השדות: שם ההורה, שם הילד/ה, טלפון, מייל, שירות, תאריך מבוקש, שעה, משקל נוכחי, עדיין בפגייה, שעות נוחות לחזרה, מועד שליחה, מקור, סטטוס.\n\n**Credentials שצריך לחבר (לחיצה על כל צומת → Create new):**\n• Airtable — Personal Access Token עם `data.records:write`\n• Telegram — בוט מ-@BotFather (Bot Token)\n• Google Calendar — OAuth (חשבון גוגל שבו היומן)\n• Gmail — OAuth (אותו חשבון)\n• OpenAI — לצ׳אט הבוט בטלגרם\n\n**צריך למלא:** ה-Base והטבלה ב-Airtable, וה-Chat ID שלך בצומת התראה בטלגרם (אפשר לשלוח הודעה לבוט ואז לראות אותה ב-Executions).\n\nהאתר עצמו שולח POST ל-`/webhook/form` ומצפה ל-`{ ok: true }`.",
+        "height": 460,
+        "width": 430,
         "color": 5
       },
       "id": "1f000000-0000-4000-8000-000000000001",
       "name": "הוראות",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-560, -160]
+      "position": [-620, -240]
     },
     {
       "parameters": {
@@ -27,7 +25,7 @@ jsom אתר של עדי
       "name": "Webhook - טופס",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [-160, 60],
+      "position": [-160, 40],
       "webhookId": "9f1c2b3a-4d5e-4f60-8a71-2b3c4d5e6f70"
     },
     {
@@ -120,7 +118,7 @@ jsom אתר של עדי
       "name": "מיפוי שדות",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
-      "position": [80, 60]
+      "position": [80, 40]
     },
     {
       "parameters": {
@@ -163,7 +161,54 @@ jsom אתר של עדי
       "name": "Airtable - צור פנייה",
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [320, 60]
+      "position": [320, 40]
+    },
+    {
+      "parameters": {
+        "chatId": "",
+        "text": "={{ 'פנייה חדשה מהאתר 🌿\\n\\nהורה: ' + $('מיפוי שדות').item.json['שם ההורה'] + '\\nילד/ה: ' + $('מיפוי שדות').item.json['שם הילד/ה'] + '\\nשירות: ' + $('מיפוי שדות').item.json['שירות'] + '\\nתאריך ושעה: ' + $('מיפוי שדות').item.json['תאריך מבוקש'] + ' ' + $('מיפוי שדות').item.json['שעה'] + '\\nמשקל: ' + $('מיפוי שדות').item.json['משקל נוכחי'] + ' גרם' + '\\nעדיין בפגייה: ' + $('מיפוי שדות').item.json['עדיין בפגייה'] + '\\nשעות נוחות לחזרה: ' + $('מיפוי שדות').item.json['שעות נוחות לחזרה'].join(', ') + '\\n\\nלשיחת וואטסאפ עם ההורה:\\nhttps://wa.me/972' + String($('מיפוי שדות').item.json['טלפון']).replace(/\\D/g, '').replace(/^0/, '') }}",
+        "additionalFields": {}
+      },
+      "id": "1f000000-0000-4000-8000-000000000005",
+      "name": "Telegram - התראה לעדי",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [560, 40]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "calendar": {
+          "__rl": true,
+          "value": "primary",
+          "mode": "list",
+          "cachedResultName": "primary"
+        },
+        "start": "={{ $('מיפוי שדות').item.json['תאריך מבוקש'] + 'T' + $('מיפוי שדות').item.json['שעה'] + ':00' }}",
+        "end": "={{ new Date(new Date($('מיפוי שדות').item.json['תאריך מבוקש'] + 'T' + $('מיפוי שדות').item.json['שעה'] + ':00').getTime() + 3600000).toISOString() }}",
+        "additionalFields": {
+          "summary": "={{ $('מיפוי שדות').item.json['שירות'] + ' — ' + $('מיפוי שדות').item.json['שם ההורה'] }}",
+          "description": "={{ 'ילד/ה: ' + $('מיפוי שדות').item.json['שם הילד/ה'] + '\\nטלפון: ' + $('מיפוי שדות').item.json['טלפון'] + '\\nמייל: ' + $('מיפוי שדות').item.json['מייל'] + '\\nמשקל: ' + $('מיפוי שדות').item.json['משקל נוכחי'] + ' גרם' }}"
+        }
+      },
+      "id": "1f000000-0000-4000-8000-000000000006",
+      "name": "Google Calendar - קבע ביומן",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [800, 40]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('מיפוי שדות').item.json['מייל'] }}",
+        "subject": "={{ 'קיבלנו את פנייתך — ' + $('מיפוי שדות').item.json['שירות'] }}",
+        "message": "={{ 'שלום ' + $('מיפוי שדות').item.json['שם ההורה'] + ',\\n\\nתודה שפנית אלינו. קיבלנו את הבקשה לשירות ' + $('מיפוי שדות').item.json['שירות'] + ' בתאריך ' + $('מיפוי שדות').item.json['תאריך מבוקש'] + ' בשעה ' + $('מיפוי שדות').item.json['שעה'] + '.\\nעדי תחזור אליך לשיחה קצרה בשעות שבחרת לאישור סופי.\\n\\nאם משהו דחוף — אפשר לכתוב בוואטסאפ.\\n\\nבברכה,\\nליווי פגים — עדי לוי' }}",
+        "options": {}
+      },
+      "id": "1f000000-0000-4000-8000-000000000007",
+      "name": "Gmail - אישור ללקוח",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1040, 40]
     },
     {
       "parameters": {
@@ -171,11 +216,76 @@ jsom אתר של עדי
         "responseBody": "={{ { \"ok\": true } }}",
         "options": {}
       },
-      "id": "1f000000-0000-4000-8000-000000000005",
+      "id": "1f000000-0000-4000-8000-000000000008",
       "name": "השב לטופס",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [560, 60]
+      "position": [1280, 40]
+    },
+    {
+      "parameters": {
+        "content": "## צ׳אט בוט ה-AI (טלגרם)\nאותו אופי ואותם כללים של הצ׳אט באתר.\n1. פתחו ב-@BotFather בוט וקבלו Token → חיברו בצומת Telegram Trigger ובצומת התשובה.\n2. חברו מפתח OpenAI (או החליפו לספק אחר — Gemini/Anthropic).\n3. הפעילו, שלחו הודעה לבוט וקבלו מענה.\n\nאפשר לחבר גם וואטסאפ: הוסיפו צומת WhatsApp (Cloud API) לפני ה-AI Agent ובמקום צומת התשובה.",
+        "height": 280,
+        "width": 400,
+        "color": 4
+      },
+      "id": "1f000000-0000-4000-8000-00000000000e",
+      "name": "הוראות צ׳אט",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-620, 420]
+    },
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "1f000000-0000-4000-8000-000000000009",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [-160, 520],
+      "webhookId": "5c7e1a02-9b44-4c88-9d17-3f2a1b6c8e90"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "אתה הצ׳אט בוט של אתר ליווי הפגים של עדי לוי — אחות מוסמכת בפגייה עם ניסיון רב שנים כאחות טיפול נמרץ בבית חולים אסף הרופא, שעדיין משמשת כאחות פגייה, ואמא לפגים תאומים. השירותים: אחות לילה בבית (22:00–06:00), ליווי בפגייה בשיחות טלפון (09:00–18:00), ליווי והדרכה בבית כולל החייאה בתינוקות (09:00–18:00), ושיחת ייעוץ (09:00–18:00). אזור שירות: רחובות והסביבה. אין תשלום באתר — משאירים פרטים בטופס והאחות חוזרת לשיחה. לתאם כעשרה ימים מראש; ביטול עד 24 שעות לפני המועד ללא עלות. ענה בעברית, בטון חם ומרגיע, עד 4 משפטים, בלי אבחון רפואי — במקרה של חשש רפואי הפנה לרופא. אל תמציא מחירים או זמינות."
+        }
+      },
+      "id": "1f000000-0000-4000-8000-00000000000a",
+      "name": "AI Agent - סוכן מכירות",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [120, 520]
+    },
+    {
+      "parameters": {
+        "model": {
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "id": "1f000000-0000-4000-8000-00000000000b",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [100, 700]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "id": "1f000000-0000-4000-8000-00000000000c",
+      "name": "Telegram - השב ללקוח",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [400, 520]
     }
   ],
   "connections": {
@@ -205,7 +315,73 @@ jsom אתר של עדי
       "main": [
         [
           {
+            "node": "Telegram - התראה לעדי",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - התראה לעדי": {
+      "main": [
+        [
+          {
+            "node": "Google Calendar - קבע ביומן",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Calendar - קבע ביומן": {
+      "main": [
+        [
+          {
+            "node": "Gmail - אישור ללקוח",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - אישור ללקוח": {
+      "main": [
+        [
+          {
             "node": "השב לטופס",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - סוכן מכירות",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - סוכן מכירות",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - סוכן מכירות": {
+      "main": [
+        [
+          {
+            "node": "Telegram - השב ללקוח",
             "type": "main",
             "index": 0
           }
